@@ -1,0 +1,54 @@
+ // Write a function that accepts a number and returns the factorial of that number. E.g factorial(4);// Output 24
+function factorial(n) {
+    if (n < 0) return undefined; 
+    if (n === 0 || n === 1) return 1;
+    return n * factorial(n - 1);
+}
+console.log(factorial(4));
+
+// Write a function that accepts an array of numbers and returns the largest number in the array. Note: Do not use Math.max(); for this solution.
+function findLargestNumber(numbers) {
+    if (!numbers || numbers.length === 0) return null;
+    
+    let largest = numbers[0];
+    
+    for (let i = 1; i < numbers.length; i++) {
+        if (numbers[i] > largest) {
+            largest = numbers[i];
+        }
+    }
+    
+    return largest;
+}
+console.log(findLargestNumber([1, 5, 2, 8, 30, 3]));
+// Write a function that accepts a string and returns the number of consonants in that string.
+function countConsonants(str) {
+    if (!str) return 0;
+    
+    const consonants = 'bcdfghjklmnpqrstvwxyz';
+    let count = 0;
+    
+    for (let char of str.toLowerCase()) {
+        if (consonants.includes(char)) {
+            count++;
+        }
+    }
+    
+    return count;
+}
+console.log(countConsonants("backend"));
+// Write a function that accepts a number and returns the multiplication table for that number up to 12.
+ //     E.g function(5);
+// Output below
+//   5 X 1 = 5
+// 5 X 2 = 10
+// ...
+// 5 X 12 = 60
+function multiplicationTable(num) {
+    const table = [];
+    for (let i = 1; i <= 12; i++) {
+        table.push(`${num} X ${i} = ${num * i}`);
+    }
+    return table;
+}
+console.log(multiplicationTable(5));
