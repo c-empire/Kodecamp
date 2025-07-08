@@ -1,0 +1,175 @@
+class ProvisionStore {
+  constructor(shopName, location) {
+    this.shopName = shopName;
+    this.location = location;
+    this.products = [];
+  }
+
+  ID() {
+    return Math.floor(Math.random() * 1000000);
+  }
+
+  
+  StockStatus(status) {
+    return ['in-stock', 'low-stock', 'out-of-stock'].includes(status);
+  }
+
+  getProducts() {
+    return this.products;
+  }
+
+  getProductById(id) {
+    return this.products.find(product => product.id === id);
+  }
+
+  addProduct(productName, cost, stockStatus) {
+    if (!this.StockStatus(stockStatus)) {
+      throw new Error('Invalid stock status. Must be in-stock, low-stock, or out-of-stock');
+    }
+
+    const newProduct = {
+      id: this.ID(),
+      productName,
+      cost,
+      stockStatus,
+      createdAt: new Date().toISOString()
+    };
+
+    this.products.push(newProduct);
+    return newProduct;
+  }
+
+  editProduct(id, productName, cost) {
+    const product = this.getProductById(id);
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    product.productName = productName;
+    product.cost = cost;
+    return product;
+  }
+
+  // Edit stock status only
+  editStockStatus(id, stockStatus) {
+    if (!this.StockStatus(stockStatus)) {
+      throw new Error('Invalid stock status. Must be in stock, low stock, or out of stock');
+    }
+
+    const product = this.getProductById(id);
+    if (!product) {
+      throw new Error('Product does not exist');
+    }
+
+    product.stockStatus = stockStatus;
+    return product;
+  }
+
+  deleteProduct(id) {
+    const index = this.products.findIndex(product => product.id === id);
+    if (index === -1) {
+      throw new Error('Product not does exist');
+    }
+
+    return this.products.splice(index, 1)[0];
+  }
+}
+
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+let products = [];
+
+
+const ID = () => {
+    return Math.floor(Math.random() * 1000000);
+};
+
+
+const StockStatus = (status) => {
+    const Statuses = ['in-stock', 'low-stock', 'out-of-stock'];
+    return Statuses.includes(status);
+};
+
+
+app.get('/products', (req, res) => {
+    res.json(products);
+});
+
+
+app.get('/products/:id', (req, res) => {
+    const product = products.find(p => p.id === parseInt(req.params.id));
+    if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json(product);
+});
+
+
+app.post('/products', (req, res) => {
+    const { productName, cost, stockStatus } = req.body;
+
+    if (!productName || typeof cost !== 'number' || !stockStatus) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!StockStatus(stockStatus)) {
+        return res.status(400).json({ error: 'Invalid stock status. Must be "in-stock", "low-stock", or "out-of-stock"' });
+    }
+
+    const newProduct = {
+        id: ID(),
+        productName,
+        cost,
+        stockStatus,
+        createdAt: new Date()
+    };
+
+    products.push(newProduct);
+    res.status(201).json(newProduct);
+});
+
+
+app.patch('/products/:id', (req, res) => {
+    const product = products.find(p => p.id === parseInt(req.params.id));
+    if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+    }
+
+    const { productName, cost } = req.body;
+    
+    if (productName) product.productName = productName;
+    if (typeof cost === 'number') product.cost = cost;
+
+    res.json(product);
+});
+
+
+app.patch('/products/:id/:status', (req, res) => {
+    const status = req.params.status;
+    
+    if (!StockStatus(status)) {
+        return res.status(400).json({ error: 'Invalid stock status. Must be "in-stock", "low stock", or "outof stock"' });
+    }
+
+    const product = products.find(p => p.id === parseInt(req.params.id));
+    if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+    }
+
+    product.stockStatus = status;
+    res.json(product);
+});
+
+
+app.delete('/products/:id', (req, res) => {
+    const index = products.findIndex(p => p.id === parseInt(req.params.id));
+    if (index === -1) {
+        return res.status(404).json({ error: 'Product not found' });
+    }
+
+    const deletedProduct = products.splice(index, 1)[0];
+    res.json(deletedProduct);
+});
